@@ -1,0 +1,92 @@
+@import "tailwindcss";
+
+@theme {
+  --color-primary: #1A0F5A;
+  --color-accent: #FF6A00;
+  --font-industrial: Inter, system-ui, sans-serif;
+}
+
+@layer base {
+  body {
+    @apply bg-primary text-white font-industrial m-0 p-0 overflow-x-auto;
+  }
+}
+
+/* Custom Industrial Styles */
+.industrial-border {
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.kpi-qty-inspection {
+  background: linear-gradient(to bottom, #4f709c, #293b5f);
+}
+
+.kpi-qty-defect {
+  background: linear-gradient(to bottom, #d9534f, #962d2d);
+}
+
+.kpi-rft {
+  background: linear-gradient(to bottom, #1d7a27, #134e1c);
+}
+
+.kpi-a-grade {
+  background: linear-gradient(to bottom, #8db596, #5d8265);
+}
+
+.kpi-b-grade {
+  background: linear-gradient(to bottom, #e08b1b, #a85f0b);
+}
+
+.kpi-defect-rate,
+.kpi-defect-rate-red {
+  background: linear-gradient(to bottom, #d9534f, #962d2d);
+}
+
+.kpi-pass-rate-blue {
+  background: linear-gradient(to bottom, #2563eb, #1e3a8a);
+}
+
+/* Responsive Layout Dashboard */
+#dashboard-canvas {
+  width: 100%;
+  max-width: 100%;
+  height: auto;
+  position: relative;
+  background-color: #1A0F5A;
+  padding: 16px;
+  box-sizing: border-box;
+}
+
+/* Recharts customization */
+.recharts-cartesian-grid-horizontal line,
+.recharts-cartesian-grid-vertical line {
+  stroke: rgba(255, 255, 255, 0.1);
+}
+
+.recharts-text {
+  fill: white !important;
+  font-size: 12px;
+}
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(-10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.animate-fade-in {
+  animation: fadeIn 0.2s ease-out forwards;
+}
+
+/* Custom Scrollbar */
+.custom-scrollbar::-webkit-scrollbar {
+  width: 6px;
+}
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.05);
+}
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 10px;
+}
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: var(--color-accent);
+}

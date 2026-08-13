@@ -1,0 +1,205 @@
+export const normalizeKey = (value) => String(value || '').toLowerCase().replace(/[^a-z0-9]/g, '');
+
+export const findKey = (item, ...searchTerms) => {
+  if (!item) return null;
+
+  const entries = Object.keys(item).map((key) => ({
+    key,
+    normalized: normalizeKey(key)
+  }));
+
+  for (const term of searchTerms) {
+    const normalizedTerm = normalizeKey(term);
+    const match = entries.find((entry) => entry.normalized.includes(normalizedTerm));
+    if (match) return match.key;
+  }
+
+  return null;
+};
+
+export const parseNumber = (value) => {
+  if (value === null || value === undefined) return 0;
+
+  const normalized = String(value)
+    .trim()
+    .replace(/\./g, '')
+    .replace(/,/g, '.')
+    .replace(/[^\d.-]/g, '');
+
+  if (!normalized) return 0;
+
+  const parsed = Number(normalized);
+  return Number.isFinite(parsed) ? parsed : 0;
+};
+
+export const parsePercent = (value) => {
+  if (value === null || value === undefined) return null;
+  const str = String(value).trim();
+  if (!str || str === '-' || str === 'NO DATA') return null;
+
+  const cleaned = str.replace(/,/g, '.').replace(/[^\d.-]/g, '');
+  if (!cleaned) return null;
+
+  let parsed = parseFloat(cleaned);
+  if (!Number.isFinite(parsed)) return null;
+
+  if (parsed > 0 && parsed <= 1 && !str.includes('%')) {
+    parsed = parsed * 100;
+  }
+
+  return parsed;
+};
+
+export const toLocalISODate = (date) => {
+  const y = date.getFullYear();
+  const m = String(date.getMonth() + 1).padStart(2, '0');
+  const d = String(date.getDate()).padStart(2, '0');
+  return `${y}-${m}-${d}`;
+};
+
+export const formatDateStr = (dateStr) => {
+  if (!dateStr || dateStr === 'ALL') return '';
+  const parts = String(dateStr).split('-');
+  const months = ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des'];
+  if (parts.length === 3) {
+    const [y, m, d] = parts;
+    return `${parseInt(d)} ${months[parseInt(m) - 1]} ${y}`;
+  }
+  return dateStr;
+};
+
+export const getWeekStart = (dateStr) => {
+  if (!dateStr) return '';
+  
+  let d;
+  if (String(dateStr).includes('/')) {
+    const [day, month, year] = String(dateStr).split('/').map(Number);
+    d = new Date(year, month - 1, day);
+  } else {
+    d = new Date(dateStr);
+  }
+  
+  if (isNaN(d.getTime())) return '';
+  const day = d.getDay(); // 0=Sun
+  const diff = day === 0 ? -6 : 1 - day; // shift to Monday
+  const monday = new Date(d);
+  monday.setDate(d.getDate() + diff);
+  return toLocalISODate(monday);
+};
+
+export const getWeekLabel = (weekStartStr) => {
+  const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  
+  let start;
+  if (String(weekStartStr).includes('/')) {
+    const [day, month, year] = String(weekStartStr).split('/').map(Number);
+    start = new Date(year, month - 1, day);
+  } else {
+    start = new Date(weekStartStr);
+  }
+  
+  if (isNaN(start.getTime())) return weekStartStr;
+  
+  const end = new Date(start);
+  end.setDate(start.getDate() + 6);
+  return `${start.getDate()} ${months[start.getMonth()]} - ${end.getDate()} ${months[end.getMonth()]} ${end.getFullYear()}`;
+};
+
+// Static inspector-type mapping
+export const INSPECTOR_TYPE_MAP = {
+  'SHAHRUKH': '3rd Party',
+  'NIKHIL DEEP': '3rd Party',
+  'LAKSHYA SHARMA': '3rd Party',
+  'GURUCHARAN YADAV': '3rd Party',
+  'SATGURU PRASAD': '3rd Party',
+  'NARESHKUMAR JAYARAMAN': '3rd Party',
+  'PARASURAM': '3rd Party',
+  'ASHUTOSH': '3rd Party',
+  'MANPREET BAKSHI': '3rd Party',
+  'DANISH QAMAR': '3rd Party',
+  'RIZKY DWI': '3rd Party',
+  'DAVESH': '3rd Party',
+  'ILHAM': '3rd Party',
+  'FADZAL': '3rd Party',
+  'NIRMAL': '3rd Party',
+  'SUMAN': '3rd Party',
+  'BOYKE FERDIAN': '3rd Party',
+  'AGISTA RANZA ANJARI': 'PSI',
+  'HILHAM MUAZAM AUDA': 'PSI',
+  'AZZI FATHURIHMAN': 'PSI',
+  'RIVDA NOOR MAULIDYA': 'PSI',
+  'ARUN': '3rd Party',
+  'HARIS': '3rd Party',
+  'M. ARIF SIDDIQ': '3rd Party',
+  'SEPTI': '3rd Party',
+  'MUNINDRA': '3rd Party',
+  'IDA NUR MALLA': 'PSI',
+  'UUN SEFTY WIDYA ASTUTI': 'PSI',
+  'NOOR ROKHMAH': 'PSI',
+  'AZIZAH': 'PSI',
+  'ADRY RIZKI': '3rd Party',
+  'SHIVAM JADON': '3rd Party',
+  'DEEPAK': '3rd Party',
+  'REKA ARIBOWO': 'PSI',
+  'DADAN KHUSNUDZAN': '3rd Party',
+  'ARIF SIDDIQ': '3rd Party',
+  'NIKHIL': '3rd Party',
+  'ILHAM': '3rd Party',
+  'NIRMAL': '3rd Party',
+  'SATGURU PRASAD': '3rd Party',
+  'MANPREET BAKSHI': '3rd Party',
+  'LAKSHYA SHARMA': '3rd Party',
+  'SHAHRUKH': '3rd Party',
+  'NIKHIL DEEP': '3rd Party',
+};
+
+export const getInspectorType = (inspectorName, item) => {
+  let targetItem = null;
+  let nameStr = null;
+
+  if (typeof inspectorName === 'object' && inspectorName !== null) {
+    targetItem = inspectorName;
+  } else {
+    nameStr = inspectorName;
+    if (typeof item === 'object' && item !== null) {
+      targetItem = item;
+    }
+  }
+
+  // 1. Check direct sheet column if available (e.g., type_inspection, type inspection, inspection_type, inspector_type, etc.)
+  if (targetItem) {
+    const typeKey = findKey(
+      targetItem,
+      'type_inspection',
+      'type inspection',
+      'inspection_type',
+      'inspector_type',
+      'type_inspector',
+      'type'
+    );
+
+    if (typeKey && targetItem[typeKey] && String(targetItem[typeKey]).trim() !== '' && String(targetItem[typeKey]).trim() !== '-') {
+      const val = String(targetItem[typeKey]).trim().toUpperCase();
+      // Exact T1QM match / T1QM check
+      if (val.includes('T1QM') || val.includes('T1 QM') || val === 'T1QM' || val === 'T1') return 'T1QM';
+      // Exact CFA match / CFA check
+      if (val.includes('CFA')) return 'CFA';
+      // Exact PSI match
+      if (val === 'PSI') return 'PSI';
+      // AQL 3rd Party variants: "AQL3rd Party", "AQL 3rd Party", "3rd Party", etc.
+      if (val.includes('AQL') || val.includes('3RD PARTY') || val.includes('3R PARTY')) return '3rd Party';
+      // Return 100% Inline directly or other types directly so they don't fall through to static lookup
+      return '100% Inline';
+    }
+
+    if (!nameStr) {
+      const inspKey = findKey(targetItem, 'inspector', 'inspector_name', 'name');
+      if (inspKey) nameStr = targetItem[inspKey];
+    }
+  }
+
+  // 2. Fallback to inspector name lookup in static map
+  if (!nameStr) return null;
+  const normalized = String(nameStr).trim().toUpperCase();
+  return INSPECTOR_TYPE_MAP[normalized] || null;
+};

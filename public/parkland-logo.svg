@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 180" fill="none">
+  <!-- Parkland logo: three vertical pillars with arched tops forming a stylized "P" motif -->
+  <!-- Left outer arch -->
+  <path d="M55 130 L55 75 Q55 45 80 45 Q105 45 105 75 L105 90 Q105 110 80 110 L70 110 L70 130 Z" fill="#1B4E6B"/>
+  <path d="M65 120 L65 78 Q65 57 80 57 Q95 57 95 78 L95 90 Q95 102 80 102 L70 102 L70 120 Z" fill="white"/>
+  <path d="M65 78 Q65 57 80 57 Q95 57 95 78 L95 90 Q95 102 80 102 L70 102 L70 78 Z" fill="#1B4E6B"/>
+
+  <!-- Center column -->
+  <rect x="92" y="45" width="14" height="85" rx="0" fill="#1B4E6B"/>
+
+  <!-- Right outer arch -->
+  <path d="M102 130 L102 75 Q102 45 127 45 Q152 45 152 75 L152 90 Q152 110 127 110 L117 110 L117 130 Z" fill="#1B4E6B"/>
+  <path d="M112 120 L112 78 Q112 57 127 57 Q142 57 142 78 L142 90 Q142 102 127 102 L117 102 L117 120 Z" fill="white"/>
+  <path d="M112 78 Q112 57 127 57 Q142 57 142 78 L142 90 Q142 102 127 102 L117 102 L117 78 Z" fill="#1B4E6B"/>
+
+  <!-- PARKLAND text -->
+  <text x="100" y="158" font-family="Arial, sans-serif" font-size="20" font-weight="bold" fill="#1B4E6B" text-anchor="middle" letter-spacing="4">PARKLAND</text>
+</svg>
