@@ -17,55 +17,55 @@ const DashboardContentView = ({ data, rawData, filters, id, preloadedImages, act
     const firstItem = rawData[0] || {};
 
     // ── Column keys ──
-    const qtyInsKey    = findKey(firstItem, 'qty_inspection', 'qty inspection');
-    const poKey        = findKey(firstItem, 'po');
-    const qtyOrderKey  = findKey(firstItem, 'qty_order', 'qty order');
+    const qtyInsKey = findKey(firstItem, 'qty_inspection', 'qty inspection');
+    const poKey = findKey(firstItem, 'po');
+    const qtyOrderKey = findKey(firstItem, 'qty_order', 'qty order');
     // Total defect: prefer pre-computed column, fall back to summing defect slots
     const totalDefectKey = findKey(firstItem, 'total_defect', 'total defect', 'qty_defect', 'qty defect');
-    const aGradeKey    = findKey(firstItem, 'a_grade', 'a grade', 'agrade');
-    const bGradeKey    = findKey(firstItem, 'b_grade', 'b grade', 'bgrade', 'avg_b_grade', 'avg b grade');
+    const aGradeKey = findKey(firstItem, 'a_grade', 'a grade', 'agrade');
+    const bGradeKey = findKey(firstItem, 'b_grade', 'b grade', 'bgrade', 'avg_b_grade', 'avg b grade');
     // Pre-computed RFT & defect rate columns from sheet
-    const rftKey       = findKey(firstItem, 'rft');
-    const statusKey    = findKey(firstItem, 'status_po', 'status po', 'status_inspection', 'status inspection', 'status', 'result', 'pass_fail');
+    const rftKey = findKey(firstItem, 'rft');
+    const statusKey = findKey(firstItem, 'status_po', 'status po', 'status_inspection', 'status inspection', 'status', 'result', 'pass_fail');
     // 3rd Party specific columns — derived from classification slots
     const totalAGradeKey = findKey(firstItem, 'total_a_grade', 'total a grade', 'a_grade', 'a grade', 'agrade');
     // Defect slot keys — qty + classification (up to 25 slots)
-    const qtyDefectKeys      = [];
+    const qtyDefectKeys = [];
     const classificationKeys = [];
     for (let i = 1; i <= 25; i++) {
-      qtyDefectKeys[i]      = findKey(firstItem, `qty_defect_${i}`, `qty defect ${i}`, `qtydefect${i}`);
+      qtyDefectKeys[i] = findKey(firstItem, `qty_defect_${i}`, `qty defect ${i}`, `qtydefect${i}`);
       classificationKeys[i] = findKey(firstItem, `classification_${i}`, `classification ${i}`, `clasification_${i}`, `clasification ${i}`);
     }
 
     // ── Aggregation ──
-    let totalInspection    = 0;
-    let totalDefects       = 0;
-    let totalAGrade        = 0;
-    let totalBGrade        = 0;
-    let sumRft             = 0;
-    let countRft           = 0;
-    let totalPass          = 0;
-    let totalFail          = 0;
-    let totalAGradeFull    = 0;
-    let totalCritical      = 0;
-    let totalMajor         = 0;
-    let totalMinor         = 0;
+    let totalInspection = 0;
+    let totalDefects = 0;
+    let totalAGrade = 0;
+    let totalBGrade = 0;
+    let sumRft = 0;
+    let countRft = 0;
+    let totalPass = 0;
+    let totalFail = 0;
+    let totalAGradeFull = 0;
+    let totalCritical = 0;
+    let totalMajor = 0;
+    let totalMinor = 0;
 
     data.forEach(item => {
       totalInspection += parseNumber(item[qtyInsKey]);
-      totalAGrade     += parseNumber(item[aGradeKey]);
-      totalBGrade     += parseNumber(item[bGradeKey]);
+      totalAGrade += parseNumber(item[aGradeKey]);
+      totalBGrade += parseNumber(item[bGradeKey]);
       totalAGradeFull += parseNumber(item[totalAGradeKey]);
 
       // Sum critical / major / minor from classification slots
       for (let i = 1; i <= 25; i++) {
         if (!qtyDefectKeys[i] && !classificationKeys[i]) continue;
-        const qty   = parseNumber(item[qtyDefectKeys[i]]);
-        const cls   = classificationKeys[i] ? String(item[classificationKeys[i]] || '').trim().toUpperCase() : '';
+        const qty = parseNumber(item[qtyDefectKeys[i]]);
+        const cls = classificationKeys[i] ? String(item[classificationKeys[i]] || '').trim().toUpperCase() : '';
         if (qty <= 0) continue;
-        if (cls.includes('CRITICAL'))      totalCritical += qty;
-        else if (cls.includes('MAJOR'))    totalMajor    += qty;
-        else if (cls.includes('MINOR'))    totalMinor    += qty;
+        if (cls.includes('CRITICAL')) totalCritical += qty;
+        else if (cls.includes('MAJOR')) totalMajor += qty;
+        else if (cls.includes('MINOR')) totalMinor += qty;
       }
 
       // Total defect: use pre-computed column if available
@@ -119,8 +119,8 @@ const DashboardContentView = ({ data, rawData, filters, id, preloadedImages, act
     const rftVal = countRft > 0
       ? (sumRft / countRft)
       : (totalInspection > 0
-          ? (((totalInspection - totalDefects) / totalInspection) * 100)
-          : 0);
+        ? (((totalInspection - totalDefects) / totalInspection) * 100)
+        : 0);
 
     const rft = rftVal > 0 ? rftVal.toFixed(1) : '0.0';
 
@@ -140,19 +140,19 @@ const DashboardContentView = ({ data, rawData, filters, id, preloadedImages, act
     const defectRate = is3rdParty ? passRateBuilding : psiDefectRate;
 
     return {
-      qtyOrder:        totalQtyOrder,
-      qtyInspection:   totalInspection,
-      qtyChecking:     totalInspection,
-      qtyDefect:       totalDefects,
+      qtyOrder: totalQtyOrder,
+      qtyInspection: totalInspection,
+      qtyChecking: totalInspection,
+      qtyDefect: totalDefects,
       rft,
       defectRate,
-      aGrade:          totalAGrade,
-      bGrade:          totalBGrade,
-      totalAGrade:     totalAGradeFull || totalAGrade,
-      totalBGrade:     totalBGrade,
-      criticalDefect:  totalCritical,
-      majorDefect:     totalMajor,
-      minorDefect:     totalMinor
+      aGrade: totalAGrade,
+      bGrade: totalBGrade,
+      totalAGrade: totalAGradeFull || totalAGrade,
+      totalBGrade: totalBGrade,
+      criticalDefect: totalCritical,
+      majorDefect: totalMajor,
+      minorDefect: totalMinor
     };
   }, [data, rawData, is3rdParty]);
 
@@ -262,18 +262,20 @@ const DashboardContentView = ({ data, rawData, filters, id, preloadedImages, act
       else if (s.includes('PASS') || s.includes('APPROV') || s === 'P') poPass++;
     });
     let statusPo = null;
+    let passRate = null;
     if (poPass + poFail > 0) {
-      if (poFail === 0)       statusPo = 'PASS';
-      else if (poPass === 0)  statusPo = 'FAIL';
-      else                    statusPo = 'MIXED';
+      if (poFail === 0) statusPo = 'PASS';
+      else if (poPass === 0) statusPo = 'FAIL';
+      else statusPo = 'MIXED';
+      passRate = ((poPass / (poPass + poFail)) * 100).toFixed(1);
     }
 
     return {
-      model:    getAllValues('model'),
-      factory:  getAllValues('factory'),
-      cell:     getAllValues('cell'),
-      po:       getAllValues('po'),
-      article:  getAllValues('article'),
+      model: getAllValues('model'),
+      factory: getAllValues('factory'),
+      cell: getAllValues('cell'),
+      po: getAllValues('po'),
+      article: getAllValues('article'),
       inspector: getAllValues('inspector'),
       destinasi: (() => { const v = getAllValues('destination'); return (v && v !== '-') ? v : getAllValues('destinasi'); })(),
       inspectorType: filters && filters.inspectorType && filters.inspectorType.length > 0
@@ -281,6 +283,7 @@ const DashboardContentView = ({ data, rawData, filters, id, preloadedImages, act
         : null,
       crdDate: first[crdKey] || '-',
       statusPo,
+      passRate,
       date: filters && filters.startDate && filters.startDate !== 'ALL'
         ? (filters.startDate === filters.endDate ? formatDateStr(filters.startDate) : `${formatDateStr(filters.startDate)} - ${formatDateStr(filters.endDate)}`)
         : (first[dateKey] || 'All Time')
@@ -290,28 +293,51 @@ const DashboardContentView = ({ data, rawData, filters, id, preloadedImages, act
   return (
     <div id={id} className="industrial-border bg-primary p-4 relative w-full rounded-sm flex flex-col gap-3">
 
-      {/* Inspector bar — full width above both columns */}
-      {headerMetadata.inspector && headerMetadata.inspector !== '-' && (
+      {/* ── Header bar khusus AQL 3rd Party: FACTORY + PASS RATE ── */}
+      {currentTab === '3rd Party' && headerMetadata.factory && headerMetadata.factory !== '-' && (
+        <div className="industrial-border bg-white/5 rounded-sm px-3 py-2 flex items-center gap-3 mb-3 overflow-hidden">
+          <span className="text-[11px] uppercase font-bold text-white/50 tracking-wider whitespace-nowrap">FACTORY</span>
+          <span style={{ writingMode: 'horizontal-tb', textOrientation: 'mixed', whiteSpace: 'normal', wordBreak: 'break-word' }} className="text-[13px] font-bold text-white tracking-wide leading-snug flex-1">{headerMetadata.factory}</span>
+          {/* Pass Rate badge */}
+          {headerMetadata.passRate !== null && headerMetadata.passRate !== undefined && (
+            <div className={`flex flex-row items-center justify-center gap-3 px-5 py-2 rounded-sm industrial-border min-w-[120px] shrink-0 ${parseFloat(headerMetadata.passRate) >= 90
+              ? 'bg-emerald-600/80 border-emerald-400/40'
+              : parseFloat(headerMetadata.passRate) >= 70
+                ? 'bg-amber-600/80 border-amber-400/40'
+                : 'bg-rose-700/80 border-rose-400/40'
+              }`}>
+              <span className="text-[11px] uppercase font-bold text-white/70 tracking-widest whitespace-nowrap">PASS RATE</span>
+              <span className={`text-[16px] font-black tracking-wide whitespace-nowrap ${parseFloat(headerMetadata.passRate) >= 90
+                ? 'text-emerald-200'
+                : parseFloat(headerMetadata.passRate) >= 70
+                  ? 'text-amber-200'
+                  : 'text-rose-200'
+                }`}>{headerMetadata.passRate}%</span>
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* ── Header bar untuk CFA, PSI, T1QM: INSPECTOR + STATUS PO ── */}
+      {currentTab !== '3rd Party' && headerMetadata.inspector && headerMetadata.inspector !== '-' && (
         <div className="industrial-border bg-white/5 rounded-sm px-3 py-2 flex items-center gap-3 mb-3 overflow-hidden">
           <span className="text-[11px] uppercase font-bold text-white/50 tracking-wider whitespace-nowrap">INSPECTOR</span>
           <span style={{ writingMode: 'horizontal-tb', textOrientation: 'mixed', whiteSpace: 'normal', wordBreak: 'break-word' }} className="text-[13px] font-bold text-white tracking-wide leading-snug flex-1">{headerMetadata.inspector}</span>
-          {/* STATUS PO badge — sebelah kanan inspector bar */}
+          {/* Status PO badge */}
           {headerMetadata.statusPo && (
-            <div className={`flex flex-col items-center justify-center px-3 py-1 rounded-sm industrial-border min-w-[72px] shrink-0 ${
-              headerMetadata.statusPo === 'PASS'
-                ? 'bg-emerald-600/80 border-emerald-400/40'
-                : headerMetadata.statusPo === 'FAIL'
-                  ? 'bg-rose-700/80 border-rose-400/40'
-                  : 'bg-amber-600/80 border-amber-400/40'
-            }`}>
+            <div className={`flex flex-col items-center justify-center px-3 py-1 rounded-sm industrial-border min-w-[72px] shrink-0 ${headerMetadata.statusPo === 'PASS'
+              ? 'bg-emerald-600/80 border-emerald-400/40'
+              : headerMetadata.statusPo === 'FAIL'
+                ? 'bg-rose-700/80 border-rose-400/40'
+                : 'bg-amber-600/80 border-amber-400/40'
+              }`}>
               <span className="text-[9px] uppercase font-bold text-white/70 tracking-widest leading-none mb-0.5">STATUS PO</span>
-              <span className={`text-[13px] font-black tracking-wide leading-none ${
-                headerMetadata.statusPo === 'PASS'
-                  ? 'text-emerald-200'
-                  : headerMetadata.statusPo === 'FAIL'
-                    ? 'text-rose-200'
-                    : 'text-amber-200'
-              }`}>{headerMetadata.statusPo}</span>
+              <span className={`text-[13px] font-black tracking-wide leading-none ${headerMetadata.statusPo === 'PASS'
+                ? 'text-emerald-200'
+                : headerMetadata.statusPo === 'FAIL'
+                  ? 'text-rose-200'
+                  : 'text-amber-200'
+                }`}>{headerMetadata.statusPo}</span>
             </div>
           )}
         </div>

@@ -7,6 +7,31 @@ const formatNumberIndo = (num) => {
   return val.toLocaleString('id-ID');
 };
 
+// ── ANSI AQL Limit Table (based on QTY CHECKING) ──
+// QTY CHECKING : 3,  5,  8,  13, 20, 32, 50, 80, 125, 200
+// MINOR  limit : 1,  1,  1,   2,  2,  3,  4,  6,   8,  11
+// MAJOR  limit : 1,  1,  1,   1,  2,  2,  3,  4,   6,   8
+// CRITICAL     : 0  (zero tolerance)
+const AQL_CHECKING_STEPS = [3, 5, 8, 13, 20, 32, 50, 80, 125, 200];
+const AQL_MINOR_LIMITS   = [1, 1, 1,  2,  2,  3,  4,  6,   8,  11];
+const AQL_MAJOR_LIMITS   = [1, 1, 1,  1,  2,  2,  3,  4,   6,   8];
+
+const getAqlLimits = (qtyChecking) => {
+  const qty = Number(qtyChecking);
+  if (!qty || isNaN(qty) || qty <= 0) return { minor: '-', major: '-', critical: 0 };
+
+  // Find the closest step that is >= qtyChecking (round up),
+  // or use the last step if qty exceeds the table maximum.
+  let idx = AQL_CHECKING_STEPS.findIndex(step => step >= qty);
+  if (idx === -1) idx = AQL_CHECKING_STEPS.length - 1;
+
+  return {
+    minor:    AQL_MINOR_LIMITS[idx],
+    major:    AQL_MAJOR_LIMITS[idx],
+    critical: 0,
+  };
+};
+
 const formatPercentIndo = (num) => {
   if (num === null || num === undefined) return '0,0%';
   const val = parseFloat(num);
@@ -72,6 +97,9 @@ const KPIBox = ({ kpis, metadata = {}, is3rdParty = false, activeTab }) => {
           <span className="text-[11px] uppercase font-bold text-white/95 self-start leading-tight">QTY MINOR DEFECT</span>
           <span className="text-[26px] font-bold text-center self-center my-auto text-white tracking-wide">
             {formatNumberIndo(kpis.minorDefect)}
+            <span className="text-[15px] font-semibold text-white/60 ml-0.5">
+              /{getAqlLimits(kpis.qtyChecking ?? kpis.qtyInspection).minor}
+            </span>
           </span>
         </div>
 
@@ -80,6 +108,9 @@ const KPIBox = ({ kpis, metadata = {}, is3rdParty = false, activeTab }) => {
           <span className="text-[11px] uppercase font-bold text-white/95 self-start leading-tight">QTY MAJOR DEFECT</span>
           <span className="text-[26px] font-bold text-center self-center my-auto text-white tracking-wide">
             {formatNumberIndo(kpis.majorDefect)}
+            <span className="text-[15px] font-semibold text-white/60 ml-0.5">
+              /{getAqlLimits(kpis.qtyChecking ?? kpis.qtyInspection).major}
+            </span>
           </span>
         </div>
 
@@ -88,6 +119,9 @@ const KPIBox = ({ kpis, metadata = {}, is3rdParty = false, activeTab }) => {
           <span className="text-[11px] uppercase font-bold text-white/95 self-start leading-tight">QTY CRITICAL DEFECT</span>
           <span className="text-[26px] font-bold text-center self-center my-auto text-white tracking-wide">
             {formatNumberIndo(kpis.criticalDefect)}
+            <span className="text-[15px] font-semibold text-white/60 ml-0.5">
+              /{getAqlLimits(kpis.qtyChecking ?? kpis.qtyInspection).critical}
+            </span>
           </span>
         </div>
 
