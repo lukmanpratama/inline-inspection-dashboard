@@ -46,6 +46,14 @@
   background: linear-gradient(to bottom, #2563eb, #1e3a8a);
 }
 
+.kpi-yellow {
+  background: linear-gradient(to bottom, #d4a017, #a0760a);
+}
+
+.kpi-critical-red {
+  background: linear-gradient(to bottom, #c0392b, #7b1818);
+}
+
 /* Responsive Layout Dashboard */
 #dashboard-canvas {
   width: 100%;

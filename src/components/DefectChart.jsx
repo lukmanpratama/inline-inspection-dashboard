@@ -63,24 +63,38 @@ const CustomYAxisTick = ({ x, y, payload }) => {
   );
 };
 
-const DefectChart = ({ data }) => {
-  // Calculate a nice max for x axis
+const DefectChart = ({ data, height = 210 }) => {
+  // Calculate max value from data
   const maxVal = data.length > 0 ? Math.max(...data.map(d => d.value), 0) : 0;
-  const xMax = maxVal > 0 ? Math.ceil(maxVal / 30) * 30 + 30 : 210;
-  const tickCount = Math.min(Math.floor(xMax / 30) + 1, 20);
-  const ticks = Array.from({ length: tickCount }, (_, i) => i * 30);
+  
+  // Give just enough padding at the right (around 15-20% extra) so the bar fills the width nicely
+  let xMax = 60;
+  if (maxVal > 0) {
+    if (maxVal <= 5) {
+      xMax = 6;
+    } else if (maxVal <= 10) {
+      xMax = 12;
+    } else {
+      xMax = Math.ceil(maxVal * 1.15);
+    }
+  }
+
+  // Generate 4-5 evenly spaced ticks across the axis
+  const tickCount = 5;
+  const step = xMax / (tickCount - 1);
+  const ticks = Array.from({ length: tickCount }, (_, i) => Math.round(i * step));
 
   return (
     <div className="w-full mt-1 px-2">
       <h2 className="text-sm font-bold mb-2 text-center uppercase tracking-widest border-b border-white/20 pb-1">
         Top 5 Defect
       </h2>
-      <div className="h-[210px] w-full">
+      <div style={{ height: `${height}px` }} className="w-full">
         <ResponsiveContainer width="100%" height="100%">
           <BarChart
             layout="vertical"
             data={data}
-            margin={{ top: 5, right: 30, left: 5, bottom: 5 }}
+            margin={{ top: 5, right: 35, left: 5, bottom: 5 }}
           >
             <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.08)" horizontal={false} />
             <XAxis
