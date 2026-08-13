@@ -270,6 +270,11 @@ const DashboardContentView = ({ data, rawData, filters, id, preloadedImages, act
       passRate = ((poPass / (poPass + poFail)) * 100).toFixed(1);
     }
 
+    // STATUS PO untuk header 3rd Party: hanya tampil jika filter tepat 1 PO (bukan ALL / multiple)
+    // Jika filter ALL atau multiple PO dipilih → statusPoHeader = null (kosong)
+    const isSinglePoFilter = filters && filters.po && filters.po.length === 1;
+    const statusPoHeader = isSinglePoFilter ? statusPo : null;
+
     return {
       model: getAllValues('model'),
       factory: getAllValues('factory'),
@@ -283,6 +288,7 @@ const DashboardContentView = ({ data, rawData, filters, id, preloadedImages, act
         : null,
       crdDate: first[crdKey] || '-',
       statusPo,
+      statusPoHeader,
       passRate,
       date: filters && filters.startDate && filters.startDate !== 'ALL'
         ? (filters.startDate === filters.endDate ? formatDateStr(filters.startDate) : `${formatDateStr(filters.startDate)} - ${formatDateStr(filters.endDate)}`)
@@ -293,11 +299,24 @@ const DashboardContentView = ({ data, rawData, filters, id, preloadedImages, act
   return (
     <div id={id} className="industrial-border bg-primary p-4 relative w-full rounded-sm flex flex-col gap-3">
 
-      {/* ── Header bar khusus AQL 3rd Party: FACTORY + PASS RATE ── */}
+      {/* ── Header bar khusus AQL 3rd Party: FACTORY + STATUS PO + PASS RATE ── */}
       {currentTab === '3rd Party' && headerMetadata.factory && headerMetadata.factory !== '-' && (
         <div className="industrial-border bg-white/5 rounded-sm px-3 py-2 flex items-center gap-3 mb-3 overflow-hidden">
           <span className="text-[11px] uppercase font-bold text-white/50 tracking-wider whitespace-nowrap">FACTORY</span>
           <span style={{ writingMode: 'horizontal-tb', textOrientation: 'mixed', whiteSpace: 'normal', wordBreak: 'break-word' }} className="text-[13px] font-bold text-white tracking-wide leading-snug flex-1">{headerMetadata.factory}</span>
+          {/* STATUS PO badge — hanya tampil jika single PO filter (PASS atau FAIL) */}
+          {headerMetadata.statusPoHeader && headerMetadata.statusPoHeader !== 'MIXED' && (
+            <div className={`flex flex-col items-center justify-center px-3 py-1.5 rounded-sm industrial-border min-w-[72px] shrink-0 ${
+              headerMetadata.statusPoHeader === 'PASS'
+                ? 'bg-emerald-600/80 border-emerald-400/40'
+                : 'bg-rose-700/80 border-rose-400/40'
+            }`}>
+              <span className="text-[9px] uppercase font-bold text-white/70 tracking-widest leading-none mb-0.5 whitespace-nowrap">STATUS PO</span>
+              <span className={`text-[13px] font-black tracking-wide leading-none ${
+                headerMetadata.statusPoHeader === 'PASS' ? 'text-emerald-200' : 'text-rose-200'
+              }`}>{headerMetadata.statusPoHeader}</span>
+            </div>
+          )}
           {/* Pass Rate badge */}
           {headerMetadata.passRate !== null && headerMetadata.passRate !== undefined && (
             <div className={`flex flex-row items-center justify-center gap-3 px-5 py-2 rounded-sm industrial-border min-w-[120px] shrink-0 ${parseFloat(headerMetadata.passRate) >= 90
