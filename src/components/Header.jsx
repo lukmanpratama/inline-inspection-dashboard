@@ -3,6 +3,8 @@ import React from 'react';
 const Header = ({ data }) => {
   const { model, date, factory, cell, po, inspectorType } = data || {};
 
+  const isFactoryHeader = inspectorType === 'PSI' || inspectorType === '3rd Party';
+
   return (
     <div className="flex justify-between items-start mb-6">
       <div>
@@ -22,7 +24,7 @@ const Header = ({ data }) => {
       </div>
       <div className="flex flex-col items-end gap-4">
         <div className="bg-[#BDE0FE] text-black px-6 py-1 font-bold text-lg uppercase min-w-[250px] text-center">
-          {data.inspector || 'INSPECTOR NAME'}
+          {isFactoryHeader ? (data.factory || 'FACTORY') : (data.inspector || 'INSPECTOR NAME')}
         </div>
       </div>
     </div>

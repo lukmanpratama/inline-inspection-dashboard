@@ -542,6 +542,7 @@ const Dashboard = () => {
           filteredData={tabFilteredData}
           rawData={data.raw}
           filters={effectiveFilters}
+          activeTab={activeTab}
           onProgress={(msg, cur, tot) =>
             setExportStatus({ visible: true, message: msg, progress: cur, total: tot })
           }

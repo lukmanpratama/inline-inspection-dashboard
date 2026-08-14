@@ -3,7 +3,7 @@ import KPIBox from './KPIBox';
 import DefectChart from './DefectChart';
 import DefectImages from './DefectImages';
 import StatsChart from './StatsChart';
-import BuildingStatusTable from './BuildingStatusTable';
+import BuildingStatusChart from './BuildingStatusChart';
 import { findKey, parseNumber, parsePercent, formatDateStr } from '../utils/dataUtils';
 
 const DashboardContentView = ({ data, rawData, filters, id, preloadedImages, activeTab }) => {
@@ -337,8 +337,33 @@ const DashboardContentView = ({ data, rawData, filters, id, preloadedImages, act
         </div>
       )}
 
-      {/* ── Header bar untuk CFA, PSI, T1QM: INSPECTOR + STATUS PO ── */}
-      {currentTab !== '3rd Party' && headerMetadata.inspector && headerMetadata.inspector !== '-' && (
+      {/* ── Header bar untuk PSI: FACTORY + STATUS PO ── */}
+      {currentTab === 'PSI' && headerMetadata.factory && headerMetadata.factory !== '-' && (
+        <div className="industrial-border bg-white/5 rounded-sm px-3 py-2 flex items-center gap-3 mb-3 overflow-hidden">
+          <span className="text-[11px] uppercase font-bold text-white/50 tracking-wider whitespace-nowrap">FACTORY</span>
+          <span style={{ writingMode: 'horizontal-tb', textOrientation: 'mixed', whiteSpace: 'normal', wordBreak: 'break-word' }} className="text-[13px] font-bold text-white tracking-wide leading-snug flex-1">{headerMetadata.factory}</span>
+          {/* Status PO badge */}
+          {headerMetadata.statusPo && (
+            <div className={`flex flex-col items-center justify-center px-3 py-1 rounded-sm industrial-border min-w-[72px] shrink-0 ${headerMetadata.statusPo === 'PASS'
+              ? 'bg-emerald-600/80 border-emerald-400/40'
+              : headerMetadata.statusPo === 'FAIL'
+                ? 'bg-rose-700/80 border-rose-400/40'
+                : 'bg-amber-600/80 border-amber-400/40'
+              }`}>
+              <span className="text-[9px] uppercase font-bold text-white/70 tracking-widest leading-none mb-0.5">STATUS PO</span>
+              <span className={`text-[13px] font-black tracking-wide leading-none ${headerMetadata.statusPo === 'PASS'
+                ? 'text-emerald-200'
+                : headerMetadata.statusPo === 'FAIL'
+                  ? 'text-rose-200'
+                  : 'text-amber-200'
+                }`}>{headerMetadata.statusPo}</span>
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* ── Header bar untuk CFA, T1QM: INSPECTOR + STATUS PO ── */}
+      {currentTab !== '3rd Party' && currentTab !== 'PSI' && headerMetadata.inspector && headerMetadata.inspector !== '-' && (
         <div className="industrial-border bg-white/5 rounded-sm px-3 py-2 flex items-center gap-3 mb-3 overflow-hidden">
           <span className="text-[11px] uppercase font-bold text-white/50 tracking-wider whitespace-nowrap">INSPECTOR</span>
           <span style={{ writingMode: 'horizontal-tb', textOrientation: 'mixed', whiteSpace: 'normal', wordBreak: 'break-word' }} className="text-[13px] font-bold text-white tracking-wide leading-snug flex-1">{headerMetadata.inspector}</span>
@@ -423,9 +448,9 @@ const DashboardContentView = ({ data, rawData, filters, id, preloadedImages, act
               <div className="industrial-border bg-white/5 pb-2 w-full min-w-0">
                 <DefectChart data={defectStats} height={260} />
               </div>
-              {/* Building Status Table */}
+              {/* Building Status Chart */}
               <div className="w-full">
-                <BuildingStatusTable data={data} rawData={rawData} activeTab={currentTab} />
+                <BuildingStatusChart data={data} rawData={rawData} activeTab={currentTab} />
               </div>
             </>
           ) : (

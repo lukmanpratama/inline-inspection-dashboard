@@ -132,11 +132,14 @@ const waitForImages = (container, timeoutMs = 6000) => {
  * Images are PRE-FETCHED as data URIs before rendering to avoid
  * browser cache / lazy-loading / CORS issues during html-to-image capture.
  */
-const DashboardExportController = ({ filteredData, rawData, filters, onProgress, onDone }) => {
+const DashboardExportController = ({ filteredData, rawData, filters, activeTab, onProgress, onDone }) => {
   const containerRef = useRef(null);
   const [currentPage, setCurrentPage] = useState(null);
   const [preloadedImages, setPreloadedImages] = useState([]);
   const hasStarted = useRef(false);
+
+  const currentTab = activeTab || (filters && filters.activeTab) || (filters && filters.inspectorType && filters.inspectorType.includes('3rd Party') ? '3rd Party' : filters && filters.inspectorType && filters.inspectorType.includes('CFA') ? 'CFA' : 'PSI');
+  const isGroupByFactory = currentTab === 'PSI' || currentTab === '3rd Party';
 
   useEffect(() => {
     if (hasStarted.current) return;
@@ -150,25 +153,43 @@ const DashboardExportController = ({ filteredData, rawData, filters, onProgress,
     const firstItem = rawData[0] || {};
     const cellKey = findKey(firstItem, 'cell');
     const poKey = findKey(firstItem, 'po');
+    const factoryKey = findKey(firstItem, 'factory', 'building') || 'factory';
 
-    // Group data by Cell+PO
-    const combinationsMap = {};
-    filteredData.forEach(item => {
-      const cell = String(item[cellKey] || 'Unknown').trim();
-      const po = String(item[poKey] || 'Unknown').trim();
-      const key = `${cell}___${po}`;
-      if (!combinationsMap[key]) {
-        combinationsMap[key] = { cell, po, data: [] };
-      }
-      combinationsMap[key].data.push(item);
-    });
+    let pages = [];
 
-    const pages = Object.values(combinationsMap)
-      .sort((a, b) => {
-        const cellCmp = a.cell.localeCompare(b.cell);
-        if (cellCmp !== 0) return cellCmp;
-        return a.po.localeCompare(b.po);
+    if (isGroupByFactory) {
+      // Group data by Factory for PSI and 3rd Party
+      const combinationsMap = {};
+      filteredData.forEach(item => {
+        const factory = String(item[factoryKey] || 'Unknown').trim();
+        if (!combinationsMap[factory]) {
+          combinationsMap[factory] = { factory, data: [] };
+        }
+        combinationsMap[factory].data.push(item);
       });
+
+      pages = Object.values(combinationsMap)
+        .sort((a, b) => a.factory.localeCompare(b.factory));
+    } else {
+      // Group data by Cell+PO for other tabs (e.g. CFA, T1QM)
+      const combinationsMap = {};
+      filteredData.forEach(item => {
+        const cell = String(item[cellKey] || 'Unknown').trim();
+        const po = String(item[poKey] || 'Unknown').trim();
+        const key = `${cell}___${po}`;
+        if (!combinationsMap[key]) {
+          combinationsMap[key] = { cell, po, data: [] };
+        }
+        combinationsMap[key].data.push(item);
+      });
+
+      pages = Object.values(combinationsMap)
+        .sort((a, b) => {
+          const cellCmp = a.cell.localeCompare(b.cell);
+          if (cellCmp !== 0) return cellCmp;
+          return a.po.localeCompare(b.po);
+        });
+    }
 
     // Run the sequential capture loop
     const runAll = async () => {
@@ -181,8 +202,10 @@ const DashboardExportController = ({ filteredData, rawData, filters, onProgress,
 
       for (let idx = 0; idx < pages.length; idx++) {
         const page = pages[idx];
+        const pageLabel = isGroupByFactory ? `Factory ${page.factory}` : `${page.cell} - ${page.po}`;
+
         onProgress(
-          `Fetching images for page ${idx + 1} of ${pages.length} (${page.cell} - ${page.po})...`,
+          `Fetching images for page ${idx + 1} of ${pages.length} (${pageLabel})...`,
           idx + 1,
           pages.length
         );
@@ -200,14 +223,22 @@ const DashboardExportController = ({ filteredData, rawData, filters, onProgress,
         });
 
         // 3. Update state to render DashboardContentView with pre-loaded images
-        const pageFilters = {
-          ...filters,
-          cell: [page.cell],
-          po: [page.po],
-          inspectorType: pageInspectorTypes.size > 0 
-            ? Array.from(pageInspectorTypes) 
-            : (filters.inspectorType && filters.inspectorType.length > 0 ? filters.inspectorType : [])
-        };
+        const pageFilters = isGroupByFactory
+          ? {
+              ...filters,
+              factory: [page.factory],
+              inspectorType: pageInspectorTypes.size > 0 
+                ? Array.from(pageInspectorTypes) 
+                : (filters.inspectorType && filters.inspectorType.length > 0 ? filters.inspectorType : [currentTab])
+            }
+          : {
+              ...filters,
+              cell: [page.cell],
+              po: [page.po],
+              inspectorType: pageInspectorTypes.size > 0 
+                ? Array.from(pageInspectorTypes) 
+                : (filters.inspectorType && filters.inspectorType.length > 0 ? filters.inspectorType : [])
+            };
 
         // Use a promise to wait for React to render
         await new Promise((resolve) => {
@@ -218,7 +249,7 @@ const DashboardExportController = ({ filteredData, rawData, filters, onProgress,
         });
 
         onProgress(
-          `Capturing page ${idx + 1} of ${pages.length} (${page.cell} - ${page.po})...`,
+          `Capturing page ${idx + 1} of ${pages.length} (${pageLabel})...`,
           idx + 1,
           pages.length
         );
@@ -253,7 +284,8 @@ const DashboardExportController = ({ filteredData, rawData, filters, onProgress,
       // Save the PDF
       onProgress('Saving PDF...', pages.length, pages.length);
       await new Promise(r => setTimeout(r, 300));
-      pdf.save('Dashboard_MultiPage_Export.pdf');
+      const filename = `Dashboard_${activeTab ? activeTab.replace(/\s+/g, '_') : 'MultiPage'}_Export.pdf`;
+      pdf.save(filename);
       onDone();
     };
 
@@ -286,6 +318,7 @@ const DashboardExportController = ({ filteredData, rawData, filters, onProgress,
           rawData={rawData}
           filters={currentPage.filters}
           preloadedImages={preloadedImages}
+          activeTab={activeTab || currentTab}
         />
       </div>
     </div>
